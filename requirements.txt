@@ -1,0 +1,2 @@
+playwright==latest
+pytest==latest
