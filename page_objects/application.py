@@ -21,7 +21,6 @@ class App:
         self.page.locator(f"text={menu}").click()
 
     def login(self, login: str, password: str):
-        self.page.goto("http://127.0.0.1:8000/login/?next=/")
         self.page.locator("input[name=\"username\"]").fill(login)
         self.page.locator("input[name=\"password\"]").fill(password)
         self.page.locator("text=Login").click()
