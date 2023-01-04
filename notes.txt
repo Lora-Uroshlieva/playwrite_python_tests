@@ -1,2 +1,0 @@
-python -m playwright install
-python -m playwright codegen http://127.0.0.1:8000/
