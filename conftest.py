@@ -7,6 +7,7 @@ from playwright.sync_api import sync_playwright
 from pytest import fixture
 
 import settings
+from helpers.web_service import WebService
 from page_objects.application import App
 from settings import *
 
@@ -15,6 +16,14 @@ load_dotenv()
 LOGIN = os.getenv('LOGIN')
 PASSWORD = os.getenv('PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
+
+
+@fixture(scope='session')
+def get_webservice():
+    web = WebService(BASE_URL)
+    web.login(LOGIN, PASSWORD)
+    yield web
+    web.close()
 
 
 @fixture(autouse=True, scope='session')
