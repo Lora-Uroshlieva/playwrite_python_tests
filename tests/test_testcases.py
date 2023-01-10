@@ -13,12 +13,13 @@ ddt = {'argnames': 'name,description',
 
 
 @mark.parametrize(**ddt)
-def test_new_testcase(desktop_app_auth, name, description):
+def test_new_testcase(desktop_app_auth, name, description, get_db):
+    test_cases_list_initial = get_db.list_testcases()
     desktop_app_auth.navigate_to_menu('Create new test')
     desktop_app_auth.create_test(name, description)
     desktop_app_auth.navigate_to_menu("Test Cases")
-    desktop_app_auth.test_cases.check_test_exists(name)
-    desktop_app_auth.test_cases.delete_test_by_name(name)
+    assert desktop_app_auth.test_cases.check_test_exists(name)
+    assert len(test_cases_list_initial) + 1 == len(get_db.list_testcases())
 
 
 def test_delete_testcase(desktop_app_auth, get_webservice):

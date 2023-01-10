@@ -7,6 +7,7 @@ from playwright.sync_api import sync_playwright
 from pytest import fixture
 
 import settings
+from helpers.db import DataBase
 from helpers.web_service import WebService
 from page_objects.application import App
 from settings import *
@@ -16,6 +17,7 @@ load_dotenv()
 LOGIN = os.getenv('LOGIN')
 PASSWORD = os.getenv('PASSWORD')
 BASE_URL = os.getenv('BASE_URL')
+PATH_TO_DB = os.getenv('PATH_TO_DB')
 
 
 @fixture(scope='session')
@@ -24,6 +26,13 @@ def get_webservice():
     web.login(LOGIN, PASSWORD)
     yield web
     web.close()
+
+
+@fixture(scope='session')
+def get_db(request):
+    db = DataBase(PATH_TO_DB)
+    yield db
+    db.close()
 
 
 @fixture(autouse=True, scope='session')
