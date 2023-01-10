@@ -1,4 +1,6 @@
-from playwright.sync_api import Browser
+import logging
+
+from playwright.sync_api import Browser, Route, Request, ConsoleMessage, Dialog
 
 from .demo_pages import DemoPages
 from .test_cases import TestCases
@@ -12,6 +14,17 @@ class App:
         self.base_url = base_url
         self.test_cases = TestCases(self.page)
         self.demo_pages = DemoPages(self.page)
+
+        def console_handler(message: ConsoleMessage):
+            if message.type == 'error':
+                logging.error(f'page: {self.page.url}, console error: {message.text}')
+
+        def dialog_handler(dialog: Dialog):
+            logging.warning(f'page: {self.page.url}, dialog text: {dialog.message}')
+            dialog.accept()
+
+        self.page.on('console', console_handler)
+        self.page.on('dialog', dialog_handler)
 
     def goto(self, endpoint: str, use_base_url=True):
         if use_base_url:
@@ -42,6 +55,21 @@ class App:
 
     def get_location(self):
         return self.page.locator('.position').text_content()
+
+    def intercept_requests(self, url: str, payload: str):
+        def handler(route: Route, request: Request):
+            route.fulfill(status=200, body=payload)
+
+        self.page.route(url, handler)
+
+    def stop_intercept(self, url: str):
+        self.page.unroute(url)
+
+    def refresh_dashboard(self):
+        self.page.locator('.refresh').click()
+
+    def get_total_tests_stats(self):
+        return self.page.text_content('.total >> span')
 
     def close(self):
         self.page.close()

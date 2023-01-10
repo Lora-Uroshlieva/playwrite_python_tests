@@ -4,3 +4,5 @@ venv
 .idea
 __pycache__
 .env
+report/
+secure.json
