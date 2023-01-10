@@ -1,4 +1,4 @@
-from playwright.sync_api import Browser
+from playwright.sync_api import Browser, Route, Request
 
 from .demo_pages import DemoPages
 from .test_cases import TestCases
@@ -42,6 +42,21 @@ class App:
 
     def get_location(self):
         return self.page.locator('.position').text_content()
+
+    def intercept_requests(self, url: str, payload: str):
+        def handler(route: Route, request: Request):
+            route.fulfill(status=200, body=payload)
+
+        self.page.route(url, handler)
+
+    def stop_intercept(self, url: str):
+        self.page.unroute(url)
+
+    def refresh_dashboard(self):
+        self.page.locator('.refresh').click()
+
+    def get_total_tests_stats(self):
+        return self.page.text_content('.total >> span')
 
     def close(self):
         self.page.close()
