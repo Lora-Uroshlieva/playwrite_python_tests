@@ -1,6 +1,7 @@
 import logging
 import os
 
+import allure
 import pytest
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
@@ -87,7 +88,7 @@ def mobile_app(get_playwright, get_browser, request):
     # device = request.param
     browser_name = get_browser.browser_type.name
     if browser_name == 'firefox':
-        pytest.skip(reason="Playwright mobile  is not supported on firefox browser, skipping")
+        pytest.skip(msg="Playwright mobile  is not supported on firefox browser, skipping")
     device_config = get_playwright.devices.get(request.param)
     if device_config is not None:
         device_config.update(settings.BROWSER_OPTIONS)
@@ -104,3 +105,21 @@ def mobile_app_auth(mobile_app):
     mobile_app.goto('/')
     mobile_app.login(LOGIN, PASSWORD)
     yield mobile_app
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    result = outcome.get_result()
+    setattr(item, "result_" + result.when, result)
+
+
+@pytest.fixture(scope="function", autouse=True)
+def make_screenshots(request):
+    yield
+    if request.node.result_call.outcome == "failed":
+        for arg in request.node.funcargs.values():
+            if isinstance(arg, App):
+                allure.attach(body=arg.page.screenshot(),
+                              name="Screenshot",
+                              attachment_type=allure.attachment_type.PNG)
